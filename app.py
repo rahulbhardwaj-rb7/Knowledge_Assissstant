@@ -1,10 +1,9 @@
 import streamlit as st
-import os
 from datetime import datetime
-from dotenv import load_dotenv
 from components.question_answering import QuestionAnsweringSystem
 import plotly.express as px
 import pandas as pd
+from pathlib import Path
 
 st.title("🤖 Knowledge Assistant")
 
@@ -64,8 +63,7 @@ with st.sidebar:
                 file_paths = []
                 for uploaded_file in uploaded_files:
                     file_path = f"temp_{uploaded_file.name}"
-                    with open(file_path, "wb") as f:
-                        f.write(uploaded_file.getbuffer())
+                    Path(file_path).write_bytes(uploaded_file.getbuffer())
                     file_paths.append(file_path)
                 
                 try:
@@ -79,7 +77,7 @@ with st.sidebar:
                 finally:
                     for file_path in file_paths:
                         try:
-                            os.remove(file_path)
+                            Path(file_path).unlink(missing_ok=True)
                         except:
                             pass
     

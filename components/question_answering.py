@@ -6,6 +6,7 @@ from langchain_community.document_loaders import PyPDFLoader, TextLoader, CSVLoa
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import pandas as pd
 from langchain.schema import Document
+from pathlib import Path
 
 nest_asyncio.apply()
 
@@ -100,7 +101,7 @@ class QuestionAnsweringSystem:
         }
         documents = []
         for file_path in file_paths:
-            file_ext = os.path.splitext(file_path)[1].lower()
+            file_ext = Path(file_path).suffix.lower()
             loader = loader_map.get(file_ext)
             if not loader:
                 continue  # Unsupported file type

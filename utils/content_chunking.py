@@ -3,7 +3,7 @@ import plotly.express as px
 import pdfplumber
 import camelot
 import re
-import os
+from pathlib import Path
 
 class ChartGenerator:
     def __init__(self):
@@ -14,7 +14,7 @@ class ChartGenerator:
         try:
             df = pd.read_csv(csv_file_path)
             if not df.empty:
-                table_id = f"csv_{os.path.basename(csv_file_path)}"
+                table_id = f"csv_{Path(csv_file_path).name}"
                 self.dataframes[table_id] = df
                 self.detected_tables.append({
                     'id': table_id,
