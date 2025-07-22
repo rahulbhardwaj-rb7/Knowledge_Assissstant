@@ -1,5 +1,4 @@
 import streamlit as st
-from dotenv import load_dotenv
 from pypdf import PdfReader
 import pandas as pd
 import plotly.express as px
@@ -12,10 +11,6 @@ import os
 import time
 import asyncio
 
-# Load environment variables
-load_dotenv()
-
-# Extract text from uploaded files
 def extract_text_from_files(files):
     text = ""
     for file in files:
@@ -41,12 +36,12 @@ def chunk_text(text):
 
 # Create Chroma vector store
 async def create_vector_store(chunks):
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=os.getenv("GOOGLE_API_KEY"))
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=st.secrets["GOOGLE_API_KEY"])
     return Chroma.from_texts(chunks, embedding=embeddings, persist_directory="vector_db")
 
 # Create conversational retrieval chain
 async def create_conversation_chain(vectorstore):
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key=os.getenv("GOOGLE_API_KEY"), temperature=0.3)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key=st.secrets["GOOGLE_API_KEY"], temperature=0.3)
     memory = ConversationBufferMemory(return_messages=True, memory_key="chat_history")
     return ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(), memory=memory)
 

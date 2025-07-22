@@ -3,7 +3,6 @@ from pypdf import PdfReader
 import streamlit as st
 import os
 from datetime import datetime
-from dotenv import load_dotenv
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -16,7 +15,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",
-    google_api_key=os.getenv("GOOGLE_API_KEY"),
+    google_api_key=st.secrets["GOOGLE_API_KEY"],
     temperature=0.3,
     convert_system_message_to_human=True
 )
@@ -64,7 +63,7 @@ def get_chunked_text(text):
 def get_vector_store(text_chunks):
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/embedding-001",
-        google_api_key=os.getenv("GOOGLE_API_KEY")
+        google_api_key=st.secrets["GOOGLE_API_KEY"]
     )
     return Chroma.from_texts(
         texts=text_chunks,
@@ -87,7 +86,6 @@ def get_conversation_chain(vector_store):
     )
 
 def main():
-    load_dotenv()
     st.title("Knowledge Assistant")
     st.sidebar.header("Upload Documents")
     uploaded_files = st.sidebar.file_uploader(

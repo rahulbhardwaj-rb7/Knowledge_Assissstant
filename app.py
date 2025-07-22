@@ -6,8 +6,6 @@ from components.question_answering import QuestionAnsweringSystem
 import plotly.express as px
 import pandas as pd
 
-load_dotenv()
-
 st.title("🤖 Knowledge Assistant")
 
 if "messages" not in st.session_state:
@@ -19,9 +17,9 @@ if "topic_context" not in st.session_state:
 
 @st.cache_resource
 def initialize_qa_system():
-    google_api_key = os.getenv("GOOGLE_API_KEY")
+    google_api_key = st.secrets["GOOGLE_API_KEY"]
     if not google_api_key:
-        st.error("GOOGLE_API_KEY not found in environment variables")
+        st.error("GOOGLE_API_KEY not found in Streamlit secrets")
         return None
     
     try:

@@ -1,15 +1,10 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+import streamlit as st
 
 def correct_spelling(text):
-    
     try:
         from langchain_google_genai import ChatGoogleGenerativeAI
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = st.secrets["GOOGLE_API_KEY"]
         if not api_key:
-            print("⚠️ No Google API key found, skipping spell check")
             return text
         llm = ChatGoogleGenerativeAI(
             model="gemini-2.0-flash",
@@ -36,8 +31,6 @@ Corrected text:"""
             corrected = corrected[1:-1]
         if corrected.startswith("'") and corrected.endswith("'"):
             corrected = corrected[1:-1]
-        
         return corrected
-        
     except Exception as e:
         return text

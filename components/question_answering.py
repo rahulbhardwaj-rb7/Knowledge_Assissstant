@@ -1,4 +1,4 @@
-import os
+import streamlit as st
 import nest_asyncio
 from utils.vector_database import VectorDatabase
 from utils.spellcheck import correct_spelling
@@ -10,11 +10,15 @@ from langchain.schema import Document
 nest_asyncio.apply()
 
 class QuestionAnsweringSystem:
-    def __init__(self, google_api_key):
+    def __init__(self, google_api_key=None):
+        if google_api_key is None:
+            google_api_key = st.secrets["GOOGLE_API_KEY"]
         self.vector_db = VectorDatabase(api_key=google_api_key)
         self.llm = None  # Will be initialized when needed
 
-    async def initialize_llm(self, google_api_key):
+    async def initialize_llm(self, google_api_key=None):
+        if google_api_key is None:
+            google_api_key = st.secrets["GOOGLE_API_KEY"]
         if not self.llm:
             from langchain_google_genai import ChatGoogleGenerativeAI
             self.llm = ChatGoogleGenerativeAI(
@@ -26,7 +30,9 @@ class QuestionAnsweringSystem:
         return self.llm
 
     @staticmethod
-    def create_instance(google_api_key):
+    def create_instance(google_api_key=None):
+        if google_api_key is None:
+            google_api_key = st.secrets["GOOGLE_API_KEY"]
         try:
             return QuestionAnsweringSystem(google_api_key)
         except Exception as e:

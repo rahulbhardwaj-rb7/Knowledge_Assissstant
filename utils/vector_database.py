@@ -1,5 +1,4 @@
-import os
-from dotenv import load_dotenv
+import streamlit as st
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredWordDocumentLoader, CSVLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -9,10 +8,10 @@ from langchain.prompts import PromptTemplate
 from utils.content_chunking import ChartGenerator
 import pandas as pd
 
-load_dotenv()
-
 class VectorDatabase:
-    def __init__(self, api_key):
+    def __init__(self, api_key=None):
+        if api_key is None:
+            api_key = st.secrets["GOOGLE_API_KEY"]
         self.embeddings = GoogleGenerativeAIEmbeddings(
             model="models/embedding-001",
             google_api_key=api_key
@@ -74,7 +73,7 @@ class VectorDatabase:
                 self.vector_store.persist()
             else:
                 db_path = "vector_db/knowledge_base"
-                os.makedirs("vector_db", exist_ok=True)
+                st.makedirs("vector_db", exist_ok=True)
                 self.vector_store = Chroma.from_documents(
                     documents=docs,
                     embedding=self.embeddings,
