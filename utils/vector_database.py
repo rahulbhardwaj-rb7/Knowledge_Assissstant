@@ -1,4 +1,5 @@
 import streamlit as st
+from pathlib import Path
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredWordDocumentLoader, CSVLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -7,6 +8,7 @@ from langchain.schema import Document
 from langchain.prompts import PromptTemplate
 from utils.content_chunking import ChartGenerator
 import pandas as pd
+import shutil
 
 class VectorDatabase:
     def __init__(self, api_key=None):
@@ -72,12 +74,12 @@ class VectorDatabase:
                 self.vector_store.add_documents(docs)
                 self.vector_store.persist()
             else:
-                db_path = "vector_db/knowledge_base"
-                st.makedirs("vector_db", exist_ok=True)
+                db_path = Path("vector_db/knowledge_base")
+                db_path.parent.mkdir(parents=True, exist_ok=True)
                 self.vector_store = Chroma.from_documents(
                     documents=docs,
                     embedding=self.embeddings,
-                    persist_directory=db_path
+                    persist_directory=str(db_path)
                 )
                 self.vector_store.persist()
         except Exception:
@@ -88,7 +90,7 @@ class VectorDatabase:
             file_paths = [file_paths]
         docs = []
         for file_path in file_paths:
-            ext = os.path.splitext(file_path)[1].lower()
+            ext = Path(file_path).suffix.lower()
             loader = self._get_loader(ext)
             if not loader:
                 continue
@@ -295,9 +297,9 @@ ANSWER:"""
                 self.vector_store = None
             self.documents = []
             self.chart_generator.clear_tables()
-            import shutil
-            if os.path.exists("./knowledge_base"):
-                shutil.rmtree("./knowledge_base")
+            kb_path = Path("./knowledge_base")
+            if kb_path.exists() and kb_path.is_dir():
+                shutil.rmtree(kb_path)
             return "✅ Database and tables cleared successfully"
         except Exception as e:
             return f"❌ Error clearing database: {e}"
