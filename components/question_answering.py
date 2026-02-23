@@ -5,7 +5,7 @@ from utils.spellcheck import correct_spelling
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, CSVLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import pandas as pd
-from langchain.schema import Document
+from langchain_core.documents import Document
 from pathlib import Path
 
 nest_asyncio.apply()
