@@ -3,7 +3,7 @@ import nest_asyncio
 from utils.vector_database import VectorDatabase
 from utils.spellcheck import correct_spelling
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, CSVLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import pandas as pd
 from langchain.schema import Document
 from pathlib import Path
