@@ -1,9 +1,14 @@
 import pandas as pd
 import plotly.express as px
 import pdfplumber
-import camelot
 import re
 from pathlib import Path
+
+try:
+    import camelot
+    HAS_CAMELOT = True
+except ImportError:
+    HAS_CAMELOT = False
 
 class ChartGenerator:
     def __init__(self):
@@ -34,8 +39,15 @@ class ChartGenerator:
         
         try:
             print(f"Extracting tables from {pdf_path}...")
-            # tables_found.extend(self._extract_with_pdfplumber(pdf_path))
-            tables_found.extend(self._extract_with_camelot(pdf_path))
+            if HAS_CAMELOT:
+                try:
+                    tables_found.extend(self._extract_with_camelot(pdf_path))
+                except Exception as e:
+                    print(f"Camelot extraction failed: {e}, falling back to pdfplumber...")
+                    tables_found.extend(self._extract_with_pdfplumber(pdf_path))
+            else:
+                print("Camelot not available, using pdfplumber for table extraction...")
+                tables_found.extend(self._extract_with_pdfplumber(pdf_path))
             print(f"Found {len(tables_found)} tables")
         except Exception as e:
             print(f"Error: {e}")
@@ -43,26 +55,28 @@ class ChartGenerator:
         self.detected_tables.extend(tables_found)
         return tables_found
     
-    # def _extract_with_pdfplumber(self, pdf_path):
-    #     tables = []
-    #     with pdfplumber.open(pdf_path) as pdf:
-    #         for page_num, page in enumerate(pdf.pages):
-    #             for table_num, table_data in enumerate(page.extract_tables()):
-    #                 if table_data and len(table_data) > 1:
-    #                     df = self._clean_table_data(table_data)
-    #                     if not df.empty:
-    #                         table_id = f"pdf_p{page_num+1}_t{table_num+1}"
-    #                         self.dataframes[table_id] = df
-    #                         tables.append({
-    #                             'id': table_id,
-    #                             'type': 'pdf_table',
-    #                             'dataframe': df,
-    #                             'source': pdf_path,
-    #                             'description': f"Table from page {page_num+1} ({len(df)} rows)"
-    #                         })
-    #     return tables
+    def _extract_with_pdfplumber(self, pdf_path):
+        tables = []
+        with pdfplumber.open(pdf_path) as pdf:
+            for page_num, page in enumerate(pdf.pages):
+                for table_num, table_data in enumerate(page.extract_tables()):
+                    if table_data and len(table_data) > 1:
+                        df = self._clean_table_data(table_data)
+                        if not df.empty:
+                            table_id = f"pdf_p{page_num+1}_t{table_num+1}"
+                            self.dataframes[table_id] = df
+                            tables.append({
+                                'id': table_id,
+                                'type': 'pdf_table',
+                                'dataframe': df,
+                                'source': pdf_path,
+                                'description': f"Table from page {page_num+1} ({len(df)} rows)"
+                            })
+        return tables
     
     def _extract_with_camelot(self, pdf_path):
+        if not HAS_CAMELOT:
+            return []
         tables = []
         for method in ['lattice', 'stream']:
             try:
@@ -81,7 +95,7 @@ class ChartGenerator:
                                     'source': pdf_path,
                                     'description': f"{method.title()} table ({len(df)} rows, {table.accuracy:.0f}% accuracy)"
                                 })
-            except:
+            except Exception as e:
                 continue
         return tables
     
