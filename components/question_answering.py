@@ -8,7 +8,11 @@ import pandas as pd
 from langchain_core.documents import Document
 from pathlib import Path
 
-nest_asyncio.apply()
+try:
+    nest_asyncio.apply()
+except ValueError:
+    # uvloop or other incompatible event loop is already running
+    pass
 
 class QuestionAnsweringSystem:
     def __init__(self, google_api_key=None):
