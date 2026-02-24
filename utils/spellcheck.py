@@ -7,7 +7,7 @@ def correct_spelling(text):
         if not api_key:
             return text
         llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",
+            model="gemini-3.0-flash",
             google_api_key=api_key,
             temperature=0.1
         )
