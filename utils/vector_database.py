@@ -232,21 +232,6 @@ DOCUMENTS:\n{document_context}\nANSWER:"""
         except Exception:
             return question
 
-    def _create_context_aware_prompt(self, question, document_context, conversation_context, current_topic):
-        return f"""You are a knowledgeable assistant with access to documents and conversation history.
-CONVERSATION CONTEXT:
-{conversation_context if conversation_context else "No previous conversation"}
-RELEVANT DOCUMENTS:
-{document_context}
-CURRENT QUESTION: {question}
-INSTRUCTIONS:
-1. Use the conversation context to understand what the user is referring to
-2. If the question references previous topics or uses pronouns (he, she, it, they, this, that), use the context to resolve them
-3. Provide a clear, specific answer based on the documents
-4. If continuing a topic, acknowledge the connection to previous discussion
-5. If the information isn't in the documents, say so clearly
-ANSWER:"""
-
     def _detect_topic(self, question, answer, current_topic):
         prompt = f"""
         Based on this question and answer, identify the main topic being discussed.
