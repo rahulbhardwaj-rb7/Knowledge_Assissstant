@@ -135,7 +135,10 @@ class QuestionAnsweringSystem:
         stats = self.vector_db.get_stats()
         if stats.get("total_documents", 0) == 0:
             return "❌ No documents available. Please upload some documents first.", [], ""
+        
+        # Apply spellcheck for better search
         corrected_question = correct_spelling(question)
+        
         answer, related_questions, detected_topic = self.vector_db.query_with_context(
             question=corrected_question,
             conversation_context=conversation_context,

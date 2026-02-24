@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from components.question_answering import QuestionAnsweringSystem
+from utils.response_formatter import clean_response
 import plotly.express as px
 import pandas as pd
 from pathlib import Path
@@ -225,7 +226,8 @@ if prompt := st.chat_input("Ask me anything about your documents..."):
                     current_topic=st.session_state.topic_context
                 )
 
-                st.markdown(answer)
+                cleaned_answer = clean_response(answer)
+                st.markdown(cleaned_answer)
                 
                 if augmented_questions:
                     st.markdown("\n**Related questions you might ask:**")
@@ -234,7 +236,7 @@ if prompt := st.chat_input("Ask me anything about your documents..."):
                         
                 st.session_state.conversation_context.append({
                     "question": prompt,
-                    "answer": answer,
+                    "answer": cleaned_answer,
                     "timestamp": datetime.now().isoformat()
                 })
                 
@@ -244,7 +246,7 @@ if prompt := st.chat_input("Ask me anything about your documents..."):
                 if len(st.session_state.conversation_context) > 10:
                     st.session_state.conversation_context = st.session_state.conversation_context[-5:]
                 
-                full_response = answer
+                full_response = cleaned_answer
                 if augmented_questions:
                     full_response += "\n\n**Related questions:**\n" + "\n".join([f"{i}. {q}" for i, q in enumerate(augmented_questions, 1)])
                 

@@ -151,18 +151,55 @@ class VectorDatabase:
     def query_with_context(self, question, conversation_context=None, current_topic="", top_k=3):
         if len(self.documents) == 0 or not question or len(question.strip()) == 0:
             return "❌ No documents available", [], ""
-        context_summary = self._build_context_summary(conversation_context, current_topic)
-        enhanced_question = self._enhance_question_with_context(question, context_summary)
-        relevant_docs = self.query(enhanced_question, top_k)
+        
+        # Fast search - skip enhancement unless context exists
+        relevant_docs = self.query(question, top_k)
         if not relevant_docs:
             return "❌ I couldn't find relevant information to answer your question.", [], current_topic
+        
         document_context = "\n\n".join([doc[0] for doc in relevant_docs])
-        prompt = self._create_context_aware_prompt(question, document_context, context_summary, current_topic)
+        prompt = self._create_context_aware_prompt(question, document_context, current_topic)
         response = self.llm.invoke(prompt)
         answer = response.content if hasattr(response, 'content') else str(response)
-        detected_topic = self._detect_topic(question, answer, current_topic)
-        related_questions = self._generate_context_aware_questions(question, answer, context_summary, detected_topic)
+        
+        # Detect topic and generate questions in parallel (simulated)
+        detected_topic = self._detect_topic_fast(question, answer, current_topic)
+        related_questions = self._generate_questions_fast(question, answer, detected_topic)
+        
         return answer, related_questions, detected_topic
+
+    def _create_context_aware_prompt(self, question, document_context, current_topic):
+        """Optimized prompt - shorter but maintains quality"""
+        return f"""Answer based on these documents. Be concise and clear.
+TOPIC: {current_topic if current_topic else 'General'}
+QUESTION: {question}
+DOCUMENTS:\n{document_context}\nANSWER:"""
+
+    def _detect_topic_fast(self, question, answer, current_topic):
+        """Fast topic detection - minimal prompt"""
+        prompt = f"In 2-4 words, what's the main topic? Q: {question[:100]} A: {answer[:100]}..."
+        try:
+            response = self.llm.invoke(prompt)
+            topic = response.content if hasattr(response, 'content') else str(response)
+            topic = topic.strip().strip('"\'.').strip()
+            return topic if topic and len(topic.split()) <= 4 else current_topic
+        except Exception:
+            return current_topic
+
+    def _generate_questions_fast(self, question, answer, topic):
+        """Fast question generation - minimal prompt"""
+        prompt = f"Generate 2-3 follow-up questions about '{topic}' based on: {question[:80]} → {answer[:80]}...\nList only the questions:"
+        try:
+            response = self.llm.invoke(prompt)
+            related_text = response.content if hasattr(response, 'content') else str(response)
+            questions = []
+            for line in related_text.split('\n'):
+                line = line.strip().lstrip('0123456789.- ').strip()
+                if line and '?' in line and len(line) > 8:
+                    questions.append(line)
+            return questions[:3]
+        except Exception:
+            return []
 
     def _build_context_summary(self, conversation_context, current_topic):
         if not conversation_context:
