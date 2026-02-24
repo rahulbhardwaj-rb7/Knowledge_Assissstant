@@ -27,7 +27,7 @@ class QuestionAnsweringSystem:
         if not self.llm:
             from langchain_google_genai import ChatGoogleGenerativeAI
             self.llm = ChatGoogleGenerativeAI(
-                model="gemini-3.0-flash",
+                model="gemini-3-flash-preview",
                 google_api_key=google_api_key,
                 temperature=0.3,
                 convert_system_message_to_human=True
